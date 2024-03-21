@@ -24,7 +24,9 @@ cd collection && go mod tidy
 
 运行项目：
 ```
+make killport
 make kill
 make clean
-make 
+make
+make start
 ```

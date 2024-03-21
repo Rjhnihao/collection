@@ -1,4 +1,3 @@
-
 package service
 
 import (
@@ -11,35 +10,32 @@ import (
 	"time"
 )
 
-
 type Collection struct {
-	Type   					string					`json:"Type"`
-	Name					string					`json:"Name"`				//藏品名称
-	Owner   				string 					`json:"Owner"`     			//藏品拥有者id
-	Introduce 				string 					`json:"Introduce"`			//藏品介绍
-	Id 						string 					`json:"Id"`					//藏品id
-	CurrentPrice 			float64 				`json:"CurrentPrice"`		//藏品当前价格
-	RemainingNumber     	int						`json:"RemainingNumber"`	//藏品剩余数量
-	CollectionHash			string					`json:"CollectionHash"`				//藏品哈希值
-	TimeStamp 			 	int64												//unix时间戳
-	TransactionHistorys	 	[]TransactionHistoryItem          					//交易历史记录
+	Type                string                   `json:"Type"`
+	Name                string                   `json:"Name"`            //藏品名称
+	Owner               string                   `json:"Owner"`           //藏品拥有者id
+	Introduce           string                   `json:"Introduce"`       //藏品介绍
+	Id                  string                   `json:"Id"`              //藏品id
+	CurrentPrice        string                   `json:"CurrentPrice"`    //藏品当前价格
+	RemainingNumber     string                   `json:"RemainingNumber"` //藏品剩余数量
+	CollectionHash      string                   `json:"CollectionHash"`  //藏品哈希值
+	TimeStamp           int64                    //unix时间戳
+	TransactionHistorys []TransactionHistoryItem //交易历史记录
 }
 
 type TransactionHistoryItem struct {
-	TxId				string		`json:"TxId"`
-	TransactionPrice 	float64		`json:"TransactionPrice"`					//交易价格
-	TransactionNumber	int			`json:"TransactionNumber"`					//交易数量
-	Seller				string		`json:"Seller"`								//卖家
-	Buyer				string		`json:"Buyer"`								//买家
-	TransactionHash		string		`json:"TransactionHash"`					//操作哈希值
-	Collection			Collection
+	TxId              string `json:"TxId"`              //每次调用产生的txid
+	TransactionPrice  string `json:"TransactionPrice"`  //交易价格
+	TransactionNumber string `json:"TransactionNumber"` //交易数量
+	Seller            string `json:"Seller"`            //卖家
+	Buyer             string `json:"Buyer"`             //买家
+	Collection        Collection
 }
 
-
 type ServiceSetup struct {
-	ChaincodeID	string
-	Client	*channel.Client
-	evClient *event.Client
+	ChaincodeID string
+	Client      *channel.Client
+	evClient    *event.Client
 }
 
 func regitserEvent(client *channel.Client, chaincodeID, eventID string) (fab.Registration, <-chan *fab.CCEvent) {
@@ -63,7 +59,7 @@ func eventResult(notifier <-chan *fab.CCEvent, eventID string) error {
 
 func InitService(chaincodeID, channelID string, org *sdkInit.OrgInfo, sdk *fabsdk.FabricSDK) (*ServiceSetup, error) {
 	handler := &ServiceSetup{
-		ChaincodeID:chaincodeID,
+		ChaincodeID: chaincodeID,
 	}
 	//prepare channel client context using client context
 	clientChannelContext := sdk.ChannelContext(channelID, fabsdk.WithUser(org.OrgUser), fabsdk.WithOrg(org.OrgName))
@@ -75,5 +71,3 @@ func InitService(chaincodeID, channelID string, org *sdkInit.OrgInfo, sdk *fabsd
 	handler.Client = client
 	return handler, nil
 }
-
-

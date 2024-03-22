@@ -1,12 +1,12 @@
 # education
 
 将`GOPATH`设置为`/root/go`,拉取项目：
-```
+```shell
 cd $GOPATH/src && git clone https://github.com/Rjhnihao/collection.git
 ```
 
 在`/etc/hosts`中添加：
-```
+```shell
 vim /etc/hosts
 ```
 
@@ -18,15 +18,18 @@ vim /etc/hosts
 ```
 
 添加依赖：
-```
+```shell
 cd collection && go mod tidy
 ```
 
 运行项目：
-```
-make killport
+```shell
 make kill
 make clean
 make
-make start
+./collection
+```
+后台运行：
+```shell
+nohup ./collection > collection.log 2>&1 &
 ```

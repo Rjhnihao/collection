@@ -1,7 +1,7 @@
 .PHONY: run clean kill
 
 run:
-	cd fixtures && docker-compose up -d && cd .. && go build -o collection	&& ./collection
+	cd fixtures && docker-compose up -d && cd .. && go build -o collection
 clean:
 	cd fixtures && docker-compose down -v && cd .. && rm -f collection
 kill:

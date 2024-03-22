@@ -20,7 +20,6 @@ func (t *ServiceSetup) Save(collection Collection) ( string, error) {
 	}
 
 	fmt.Println("开始执行链码(调用链码增加藏品信息)")
-
 	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "saveCollection", Args: [][]byte{b, []byte(eventID)}}
 	respone, err := t.Client.Execute(req)
 	if err != nil {
@@ -102,7 +101,6 @@ func (t *ServiceSetup) QueryById(Id string) (string, error){
 
 	return	string(Payload),nil
 }
-
 
 //(以下是通过富查询)
 //调用链码通过Hash查询数据

@@ -150,24 +150,26 @@ func (t *NFTChaincode) saveCollection(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error("给定的参数个数不符合要求")
 	}
 
+
 	var Collection Collection
 	err := json.Unmarshal([]byte(args[0]), &Collection)
 	if err != nil {
-		return shim.Error("反序列化信息时发生错误")
+		return shim.Error("反序列化失败")
 	}
 
-	// 验证藏品编号唯一
-	fmt.Println("打印藏品Id:", Collection.Id)
 	_, exist := getCollection(stub, Collection.Id)
 	if exist {
 		return shim.Error("要添加的藏品编号已存在")
 	}
 
+
 	Collection.TimeStamp = time.Now().Unix()
+
 	n, _ := rand.Int(rand.Reader, big.NewInt(1000000))
 	strN := fmt.Sprintf("%d", n)
 	hash := sha256.Sum256([]byte(strN))
-	dataToHash := fmt.Sprintf("%s%s%s%s%d%d%d%s",
+
+	dataToHash := fmt.Sprintf("%s%s%s%s%s%s%s%s",
 		Collection.Name,
 		Collection.Owner,
 		Collection.Introduce,
@@ -177,8 +179,11 @@ func (t *NFTChaincode) saveCollection(stub shim.ChaincodeStubInterface, args []s
 		Collection.TimeStamp,
 		hash,
 	)
+
 	hash = sha256.Sum256([]byte(dataToHash))
 	Collection.CollectionHash = hex.EncodeToString(hash[:])
+
+
 
 	_, bl := PutCollection(stub, Collection)
 	if !bl {
@@ -192,12 +197,19 @@ func (t *NFTChaincode) saveCollection(stub shim.ChaincodeStubInterface, args []s
 	}
 
 	return shim.Success([]byte("信息添加成功"))
+
+
 }
 
 // 根据id删除信息
 func (t *NFTChaincode) delCollection(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	if len(args) != 2 {
 		return shim.Error("给定的参数个数不符合要求")
+	}
+
+	_, exist := getCollection(stub, args[0])
+	if  !exist {
+		return shim.Error("要添加的藏品编号已不存在")
 	}
 
 	err := stub.DelState(args[0])
@@ -238,7 +250,7 @@ func (t *NFTChaincode) updateCollection(stub shim.ChaincodeStubInterface, args [
 	result.RemainingNumber = Collection.RemainingNumber
 	result.TimeStamp = time.Now().Unix()
 
-	dataToHash := fmt.Sprintf("%s%s%s%s%d%d%d%s",
+	dataToHash := fmt.Sprintf("%s%s%s%s%s%s%s%s",
 		result.Name,
 		result.Owner,
 		result.Introduce,

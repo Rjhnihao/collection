@@ -15,23 +15,24 @@ import (
 
 type Collection struct {
 	Type                string                   `json:"Type"`
-	Name                string                   `json:"Name"`            //藏品名称
-	Owner               string                   `json:"Owner"`           //藏品拥有者id
-	Introduce           string                   `json:"Introduce"`       //藏品介绍
-	Id                  string                   `json:"Id"`              //藏品id
-	CurrentPrice        string                   `json:"CurrentPrice"`    //藏品当前价格
-	RemainingNumber     string                   `json:"RemainingNumber"` //藏品剩余数量
-	CollectionHash      string                   `json:"CollectionHash"`  //藏品哈希值
-	TimeStamp           int64                    //unix时间戳
-	TransactionHistorys []TransactionHistoryItem //交易历史记录
+	Name                string                   `json:"Name" `            					//藏品名称
+	Owner               string                   `json:"Owner"`           					//藏品拥有者id
+	Introduce           string                   `json:"Introduce"`       					//藏品介绍
+	Id                  string                   `json:"Id"`             					//藏品id
+	CurrentPrice        string                   `json:"CurrentPrice"`    					//藏品当前价格
+	RemainingNumber     string                   `json:"RemainingNumber"` 					//藏品剩余数量
+	CollectionHash      string                   `json:"CollectionHash"`  					//藏品哈希值
+	TimeStamp           int64                    											//unix时间戳
+	TransactionHistorys []TransactionHistoryItem 											//交易历史记录
 }
 
 type TransactionHistoryItem struct {
-	TxId              string `json:"TxId"`              //每次调用产生的txid
-	TransactionPrice  string `json:"TransactionPrice"`  //交易价格
-	TransactionNumber string `json:"TransactionNumber"` //交易数量
-	Seller            string `json:"Seller"`            //卖家
-	Buyer             string `json:"Buyer"`             //买家
+	TransactionPrice  string `json:"TransactionPrice"`  									//交易价格
+	TransactionNumber string `json:"TransactionNumber"` 									//交易数量
+	Seller            string `json:"Seller"`            									//卖家
+	Buyer             string `json:"Buyer"`             									//买家
+	Id            	  string `json:"Id"`													//每笔交易的id
+	TimeStamp           int64                    											//unix时间戳
 	Collection        Collection
 }
 
@@ -64,11 +65,19 @@ func (t *NFTChaincode) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 		return t.queryCollectionByHash(stub, args) // 根据哈希值查询
 	} else if fun == "queryCollectionByOwner" {
 		return t.queryCollectionByOwner(stub, args) // 根据用户查询
+	}else if fun == "addTransaction" {
+		return t.addTransaction(stub, args) // 根据用户查询
+	}else if fun == "queryTransaction" {
+		return t.queryTransaction(stub, args) // 根据用户查询
 	}
 	return shim.Error("指定的函数名称错误")
 
 }
 
+
+/*
+对交易的处理
+*/
 // 保存藏品
 func PutCollection(stub shim.ChaincodeStubInterface, collection Collection) ([]byte, bool) {
 
@@ -242,26 +251,28 @@ func (t *NFTChaincode) updateCollection(stub shim.ChaincodeStubInterface, args [
 		return shim.Error("根据藏品id查询信息时发生错误")
 	}
 
-	result.Name = Collection.Name
-	result.Owner = Collection.Owner
-	result.Introduce = Collection.Introduce
-	result.Id = Collection.Id
-	result.CurrentPrice = Collection.CurrentPrice
-	result.RemainingNumber = Collection.RemainingNumber
-	result.TimeStamp = time.Now().Unix()
+	if	result.Owner != Collection.Owner{
+		result.Name = Collection.Name
+		result.Owner = Collection.Owner
+		result.Introduce = Collection.Introduce
+		result.Id = Collection.Id
+		result.CurrentPrice = Collection.CurrentPrice
+		result.RemainingNumber = Collection.RemainingNumber
+		result.TimeStamp = time.Now().Unix()
 
-	dataToHash := fmt.Sprintf("%s%s%s%s%s%s%s%s",
-		result.Name,
-		result.Owner,
-		result.Introduce,
-		result.Id,
-		result.CurrentPrice,
-		result.RemainingNumber,
-		result.TimeStamp,
-		Collection.CollectionHash,
-	)
-	hash := sha256.Sum256([]byte(dataToHash))
-	result.CollectionHash = hex.EncodeToString(hash[:])
+		dataToHash := fmt.Sprintf("%s%s%s%s%s%s%s%s",
+			result.Name,
+			result.Owner,
+			result.Introduce,
+			result.Id,
+			result.CurrentPrice,
+			result.RemainingNumber,
+			result.TimeStamp,
+			Collection.CollectionHash,
+		)
+		hash := sha256.Sum256([]byte(dataToHash))
+		result.CollectionHash = hex.EncodeToString(hash[:])
+	}
 
 	_, bl = PutCollection(stub, result)
 	if !bl {
@@ -315,7 +326,6 @@ func (t *NFTChaincode) queryCollectionById(stub shim.ChaincodeStubInterface, arg
 		}
 
 		var TransactionHistoryItem TransactionHistoryItem
-		TransactionHistoryItem.TxId = hisData.TxId
 		json.Unmarshal(hisData.Value, &hisEdu)
 
 		if hisData.Value == nil {
@@ -333,7 +343,7 @@ func (t *NFTChaincode) queryCollectionById(stub shim.ChaincodeStubInterface, arg
 
 	result, err := json.Marshal(b)
 	if err != nil {
-		return shim.Error("序列化edu信息时发生错误")
+		return shim.Error("序列化信息时发生错误")
 	}
 	return shim.Success(result)
 }
@@ -378,6 +388,128 @@ func (t *NFTChaincode) queryCollectionByOwner(stub shim.ChaincodeStubInterface, 
 	}
 	if result == nil {
 		return shim.Error("根据用户id没有查询到相关的信息")
+	}
+	return shim.Success(result)
+}
+
+
+/*
+对交易的处理
+ */
+// 保存交易
+func PutTransaction(stub shim.ChaincodeStubInterface, transactionHistoryItem TransactionHistoryItem) ([]byte, bool) {
+
+
+	b, err := json.Marshal(transactionHistoryItem)
+	if err != nil {
+		return nil, false
+	}
+
+	err = stub.PutState(transactionHistoryItem.Id, b)
+	if err != nil {
+		return nil, false
+	}
+
+	return b, true
+}
+
+// 根据id查询藏品当前信息
+func getTransaction(stub shim.ChaincodeStubInterface, id string) (TransactionHistoryItem, bool) {
+
+	var transactionHistoryItem TransactionHistoryItem
+	// 根据身份证号码查询信息状态
+	a, err := stub.GetState(id)
+	if err != nil {
+		return transactionHistoryItem, false
+	}
+
+	if a == nil {
+		return transactionHistoryItem, false
+	}
+
+	// 对查询到的状态进行反序列化
+	err = json.Unmarshal(a, &transactionHistoryItem)
+	if err != nil {
+		return transactionHistoryItem, false
+	}
+
+	// 返回结果
+	return transactionHistoryItem, true
+}
+
+//上传交易记录
+func (t *NFTChaincode) addTransaction(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+	if len(args) != 2 {
+		return shim.Error("给定的参数个数不符合要求")
+	}
+
+	var TransactionHistoryItem TransactionHistoryItem
+	err := json.Unmarshal([]byte(args[0]), &TransactionHistoryItem)
+	if err != nil {
+		return shim.Error("反序列化信息失败")
+	}
+	//交易时间戳
+	TransactionHistoryItem.TimeStamp=time.Now().Unix()
+	//生成交易id
+	str:=fmt.Sprintf("%s%s%s%s%s%s",
+		TransactionHistoryItem.TransactionPrice,
+		TransactionHistoryItem.TransactionNumber,
+		TransactionHistoryItem.Collection.Id,
+		TransactionHistoryItem.TimeStamp,
+		TransactionHistoryItem.Seller,
+		TransactionHistoryItem.Buyer,
+		)
+	hash1 := sha256.Sum256([]byte(str))
+
+	TransactionHistoryItem.Id = hex.EncodeToString(hash1[:])
+	//在每个藏品后面添加交易
+
+	result, bl := getCollection(stub, TransactionHistoryItem.Collection.Id)
+	if !bl {
+		return shim.Error("根据藏品id查询信息时发生错误")
+	}
+
+	result.TransactionHistorys=append(result.TransactionHistorys,TransactionHistoryItem)
+
+	_, bl = PutCollection(stub, result)
+	if !bl {
+		return shim.Error("保存信息信息时发生错误")
+	}
+
+	//检查交易是否唯一
+	_, exist := getTransaction(stub, TransactionHistoryItem.Id)
+	if exist {
+		return shim.Error("要添加的交易已存在")
+	}
+
+	_, bl = PutTransaction(stub, TransactionHistoryItem)
+	if !bl {
+		errstr:=fmt.Sprintf("%s",bl)
+		return shim.Error(errstr+"保存交易时发生错误")
+	}
+
+	err = stub.SetEvent(args[1], []byte{})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	return shim.Success([]byte(TransactionHistoryItem.Id))
+}
+
+//查询交易记录
+func (t *NFTChaincode) queryTransaction(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+	if len(args) != 1 {
+		return shim.Error("给定的参数个数不符合要求")
+	}
+
+	b, bl := getTransaction(stub, args[0])
+	if !bl {
+		return shim.Error("根据交易id查询信息时发生错误")
+	}
+
+	result, err := json.Marshal(b)
+	if err != nil {
+		return shim.Error("序列化信息时发生错误")
 	}
 	return shim.Success(result)
 }

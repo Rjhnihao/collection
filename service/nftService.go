@@ -137,3 +137,50 @@ func (t *ServiceSetup) QueryByOwner(Owner string) (string, string, error){
 
 	return	string(payload),string(txid),nil
 }
+
+
+func (t *ServiceSetup) AddT(transactionHistoryItem TransactionHistoryItem) ( string,string, error) {
+
+	eventID := "addTransaction"
+	reg, notifier := regitserEvent(t.Client, t.ChaincodeID, eventID)
+	defer t.Client.UnregisterChaincodeEvent(reg)
+
+	b, err := json.Marshal(transactionHistoryItem)
+	if err != nil {
+		return  "","", fmt.Errorf("指定的collection对象序列化时发生错误")
+	}
+
+
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "addTransaction", Args: [][]byte{b, []byte(eventID)}}
+	response, err := t.Client.Execute(req)
+	if err != nil {
+		return "","", err
+	}
+
+	err = eventResult(notifier, eventID)
+	if err != nil {
+		return "","", err
+	}
+	payload:=response.Payload
+	txid := response.TransactionID
+
+
+	return	string(payload),string(txid),nil
+}
+
+
+//调用链码通过交易id查询数据
+func (t *ServiceSetup) QueryT(Id string) (string,string, error){
+	fmt.Println(Id)
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "queryTransaction", Args: [][]byte{[]byte(Id)}}
+	response, err := t.Client.Query(req)
+	if err != nil {
+		return "","", err
+	}
+
+	payload:=response.Payload
+	txid := response.TransactionID
+
+	return	string(payload),string(txid),nil
+}
+

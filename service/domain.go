@@ -12,25 +12,27 @@ import (
 
 type Collection struct {
 	Type                string                   `json:"Type"`
-	Name                string                   `json:"Name"`            //藏品名称
-	Owner               string                   `json:"Owner"`           //藏品拥有者id
-	Introduce           string                   `json:"Introduce"`       //藏品介绍
-	Id                  string                   `json:"Id"`              //藏品id
-	CurrentPrice        string                   `json:"CurrentPrice"`    //藏品当前价格
-	RemainingNumber     string                   `json:"RemainingNumber"` //藏品剩余数量
-	CollectionHash      string                   `json:"CollectionHash"`  //藏品哈希值
-	TimeStamp           int64                    //unix时间戳
-	TransactionHistorys []TransactionHistoryItem //交易历史记录
+	Name                string                   `json:"Name" `            					//藏品名称
+	Owner               string                   `json:"Owner"`           					//藏品拥有者id
+	Introduce           string                   `json:"Introduce"`       					//藏品介绍
+	Id                  string                   `json:"Id" binding:"required"`             //藏品id
+	CurrentPrice        string                   `json:"CurrentPrice"`    					//藏品当前价格
+	RemainingNumber     string                   `json:"RemainingNumber"` 					//藏品剩余数量
+	CollectionHash      string                   `json:"CollectionHash"`  					//藏品哈希值
+	TimeStamp           int64                    											//unix时间戳
+	TransactionHistorys []TransactionHistoryItem 											//交易历史记录
 }
 
 type TransactionHistoryItem struct {
-	TxId              string `json:"TxId"`              //每次调用产生的txid
-	TransactionPrice  string `json:"TransactionPrice"`  //交易价格
-	TransactionNumber string `json:"TransactionNumber"` //交易数量
-	Seller            string `json:"Seller"`            //卖家
-	Buyer             string `json:"Buyer"`             //买家
+	TransactionPrice  string `json:"TransactionPrice"`  									//交易价格
+	TransactionNumber string `json:"TransactionNumber"` 									//交易数量
+	Seller            string `json:"Seller"`            									//卖家
+	Buyer             string `json:"Buyer"`             									//买家
+	Id            	  string `json:"Id"`													//每笔交易的id
+	TimeStamp           int64                    											//unix时间戳
 	Collection        Collection
 }
+
 
 type ServiceSetup struct {
 	ChaincodeID string

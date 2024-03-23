@@ -14,7 +14,7 @@ const (
 )
 var collection service.Collection
 var serviceSetup *service.ServiceSetup
-
+var	transactionHistoryItem	service.TransactionHistoryItem
 func main() {
 	// init orgs information
 	orgs := []*sdkInit.OrgInfo{
@@ -79,7 +79,8 @@ func main() {
 	router.GET("/queryCollectionInfoById", queryCollectionByIdhander)
 	router.GET("/queryCollectionByHash", queryCollectionByHashhander)
 	router.GET("/queryCollectionInfoByOwner", queryCollectionByOwnerhander)
-
+	router.POST("/addCollectionTransaction", addCollectionTransactionhander)
+	router.GET("/queryCollectionTransaction",queryCollectionTransactionhander)
 	router.Run(":8080")
 
 

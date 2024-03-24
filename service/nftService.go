@@ -37,14 +37,18 @@ func (t *ServiceSetup) Save(collection Collection) ( string,string, error) {
 }
 
 //调用链码删除藏品信息
-func (t *ServiceSetup) Del(Id string) (string,string, error) {
+func (t *ServiceSetup) Del(collection Collection) (string,string, error) {
 
 	eventID := "DelCollection"
 	reg, notifier := regitserEvent(t.Client, t.ChaincodeID, eventID)
 	defer t.Client.UnregisterChaincodeEvent(reg)
 
+	b, err := json.Marshal(collection)
+	if err != nil {
+		return  "","", fmt.Errorf("指定的collection对象序列化时发生错误")
+	}
 
-	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "delCollection", Args: [][]byte{[]byte(Id), []byte(eventID)}}
+	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "delCollection", Args: [][]byte{b, []byte(eventID)}}
 	response, err := t.Client.Execute(req)
 	if err != nil {
 		return "","", err
@@ -138,7 +142,10 @@ func (t *ServiceSetup) QueryByOwner(Owner string) (string, string, error){
 	return	string(payload),string(txid),nil
 }
 
-
+/*
+交易模块
+ */
+//调用链码通过增加交易信息
 func (t *ServiceSetup) AddT(transactionHistoryItem TransactionHistoryItem) ( string,string, error) {
 
 	eventID := "addTransaction"
@@ -168,8 +175,7 @@ func (t *ServiceSetup) AddT(transactionHistoryItem TransactionHistoryItem) ( str
 	return	string(payload),string(txid),nil
 }
 
-
-//调用链码通过交易id查询数据
+//调用链码通过查询交易信息
 func (t *ServiceSetup) QueryT(Id string) (string,string, error){
 	fmt.Println(Id)
 	req := channel.Request{ChaincodeID: t.ChaincodeID, Fcn: "queryTransaction", Args: [][]byte{[]byte(Id)}}

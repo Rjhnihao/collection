@@ -1,8 +1,8 @@
 package main
 
 import (
-	"education/sdkInit"
-	"education/service"
+	"collection/sdkInit"
+	"collection/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"os"
@@ -82,7 +82,4 @@ func main() {
 	router.POST("/addCollectionTransaction", addCollectionTransactionhander)
 	router.GET("/queryCollectionTransaction",queryCollectionTransactionhander)
 	router.Run(":8080")
-
-
 }
-

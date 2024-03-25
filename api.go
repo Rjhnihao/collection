@@ -1,7 +1,7 @@
 package main
 
 import (
-	"education/service"
+	"collection/service"
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"

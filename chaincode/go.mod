@@ -1,4 +1,4 @@
-module github.com/kongyixueyuan.com/education/chaincode
+module github.com/kongyixueyuan.com/collection/chaincode
 
 go 1.15
 

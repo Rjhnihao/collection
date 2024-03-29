@@ -20,7 +20,6 @@ type Result struct {
 }
 
 
-
 func saveCollectionhander(c *gin.Context) {
 	var respone Respone
 	var collection service.Collection
@@ -46,11 +45,18 @@ func saveCollectionhander(c *gin.Context) {
 		return
 	}
 
-	respone.Msg="藏品保存成功！"
-	respone.Result.Payload=payload
+	var msg interface{}
+	err =json.Unmarshal([]byte(payload),&msg)
+	if err!=nil {
+		respone.Result.Error=err.Error()
+		c.JSON(http.StatusInternalServerError, gin.H{"respone":respone})
+		return
+	}
+
+	respone.Msg="藏品上传成功！"
+	respone.Result.Payload=msg
 	respone.Result.Txid=txid
 	respone.Result.Error=""
-
 	c.JSON(http.StatusOK, gin.H{"respone":respone})
 }
 
@@ -320,4 +326,19 @@ func queryCollectionTransactionhander(c *gin.Context) {
 	respone.Result.Error=""
 	fmt.Println("5")
 	c.JSON(http.StatusOK, gin.H{"respone":respone})
+}
+
+
+var whiteList = map[string]bool{
+	"127.0.0.1": true,
+}
+
+func IPWhiteList() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if _, exists := whiteList[c.ClientIP()]; !exists {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "IP地址不在白名单中"})
+			return
+		}
+		c.Next()
+	}
 }

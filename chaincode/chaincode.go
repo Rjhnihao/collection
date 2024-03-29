@@ -204,8 +204,12 @@ func (t *NFTChaincode) saveCollection(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error(err.Error())
 	}
 
-	return shim.Success([]byte("信息添加成功"))
-
+	b := map[string]string{"CollectionHash": Collection.CollectionHash}
+	jsonData, err := json.Marshal(b)
+	if err != nil {
+		return shim.Error("序列化信息失败")
+	}
+	return shim.Success(jsonData)
 
 }
 

@@ -72,6 +72,8 @@ func main() {
 
 	router := gin.Default()
 
+	router.Use(IPWhiteList())
+
 	// 设置路由
 	router.POST("/saveCollection", saveCollectionhander)
 	router.DELETE("/delCollection", delCollectionhander)
